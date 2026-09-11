@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Property or Portfolio — Investment Comparison</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12181D;
+    --panel:#1B232B;
+    --panel-alt:#202B33;
+    --grid-line:rgba(147,161,170,0.10);
+    --ink:#EDEDE7;
+    --muted:#93A1AA;
+    --property:#C1652E;
+    --property-soft:rgba(193,101,46,0.14);
+    --property-line:rgba(193,101,46,0.35);
+    --market:#4FAE8C;
+    --market-soft:rgba(79,174,140,0.14);
+    --market-line:rgba(79,174,140,0.35);
+    --negative:#D1594A;
+    --border:rgba(237,237,231,0.11);
+    --radius:2px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Fraunces', serif; font-weight:600; margin:0;}
+  .num, input[type="number"], .metric-value, .ticker span, .axis-label, .legend-value, table.data-table td{
+    font-family:'IBM Plex Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  a{color:inherit;}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;
+    padding:5.5rem 6vw 4rem;
+    overflow:hidden;
+    border-bottom:1px solid var(--border);
+    background:
+      repeating-linear-gradient(0deg, var(--grid-line) 0 1px, transparent 1px 48px),
+      repeating-linear-gradient(90deg, var(--grid-line) 0 1px, transparent 1px 48px),
+      var(--bg);
+  }
+  .hero::before, .hero::after{
+    content:"";
+    position:absolute;
+    width:26px; height:26px;
+    border-top:1.5px solid var(--property-line);
+    border-left:1.5px solid var(--property-line);
+    top:28px; left:28px;
+  }
+  .hero::after{
+    left:auto; right:28px; top:auto; bottom:28px;
+    border-top:none; border-left:none;
+    border-bottom:1.5px solid var(--market-line);
+    border-right:1.5px solid var(--market-line);
+  }
+  .kicker{
+    font-style:italic;
+    color:var(--muted);
+    font-size:0.95rem;
+    margin-bottom:0.9rem;
+    max-width:32ch;
+  }
+  .hero h1{
+    font-size:clamp(2.1rem, 5vw, 3.6rem);
+    max-width:16ch;
+    letter-spacing:-0.01em;
+  }
+  .hero p.sub{
+    max-width:56ch;
+    color:var(--muted);
+    margin-top:1.1rem;
+    font-size:1.05rem;
+  }
+
+  /* ---------- Layout ---------- */
+  main{max-width:1180px; margin:0 auto; padding:0 6vw 5rem;}
+  section{padding-top:3.2rem;}
+
+  .settings-bar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:2.2rem;
+    align-items:flex-end;
+    padding:1.6rem 1.8rem;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    margin-top:2.6rem;
+  }
+  .field{display:flex; flex-direction:column; gap:0.4rem;}
+  .field label{font-size:0.82rem; color:var(--muted);}
+  .field .input-wrap{position:relative; display:flex; align-items:center;}
+  .field input[type="number"]{
+    background:var(--panel-alt);
+    border:1px solid var(--border);
+    color:var(--ink);
+    padding:0.55rem 2.6rem 0.55rem 0.7rem;
+    border-radius:var(--radius);
+    font-size:0.95rem;
+    width:9.5rem;
+  }
+  .field input[type="number"]:focus{
+    outline:2px solid var(--market);
+    outline-offset:1px;
+  }
+  .field .unit{
+    position:absolute; right:0.7rem;
+    color:var(--muted); font-size:0.78rem;
+    pointer-events:none;
+  }
+  .checkbox-field{display:flex; align-items:center; gap:0.6rem;}
+  .checkbox-field input{width:1.05rem; height:1.05rem; accent-color:var(--market);}
+  .checkbox-field label{font-size:0.88rem; color:var(--ink);}
+
+  .field.is-disabled input{opacity:0.45; pointer-events:none;}
+  .field.is-disabled label{opacity:0.6;}
+  .historical-badge{
+    display:inline-block;
+    font-size:0.68rem;
+    color:var(--market);
+    border:1px solid var(--market-line);
+    background:var(--market-soft);
+    border-radius:2px;
+    padding:0.1rem 0.4rem;
+    margin-left:0.4rem;
+    font-style:normal;
+    vertical-align:1px;
+  }
+
+  .historical-panel{
+    width:100%;
+    display:flex;
+    flex-wrap:wrap;
+    gap:1.4rem;
+    align-items:flex-end;
+    padding-top:1.2rem;
+    margin-top:0.4rem;
+    border-top:1px dashed var(--border);
+  }
+  .historical-note{
+    color:var(--muted);
+    font-size:0.82rem;
+    max-width:46ch;
+    line-height:1.5;
+  }
+
+  .panels{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1.6rem;
+    margin-top:1.6rem;
+  }
+  @media (max-width:860px){ .panels{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:1.7rem 1.7rem 1.9rem;
+    position:relative;
+  }
+  .panel-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-bottom:1.2rem; padding-bottom:1rem;
+    border-bottom:1px solid var(--border);
+  }
+  .panel-head h2{font-size:1.35rem;}
+  .panel-tag{font-size:0.78rem; color:var(--muted); font-style:italic;}
+
+  .property-panel{border-top:2px solid var(--property);}
+  .property-panel .panel-head::before{
+    content:"";
+    display:inline-block; width:9px; height:9px;
+    background:var(--property); margin-right:0.5rem; border-radius:1px;
+  }
+  .market-panel{border-top:2px solid var(--market); overflow:hidden;}
+
+  .ticker-wrap{
+    background:var(--market-soft);
+    border:1px solid var(--market-line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    margin-bottom:1.3rem;
+    white-space:nowrap;
+  }
+  .ticker{
+    display:inline-block;
+    padding:0.5rem 0;
+    animation:ticker-scroll 22s linear infinite;
+  }
+  .ticker span{
+    display:inline-block;
+    padding:0 1.4rem;
+    font-size:0.82rem;
+    color:var(--market);
+  }
+  @keyframes ticker-scroll{
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .ticker{animation:none;}
+  }
+
+  .field-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1.1rem 1rem;
+  }
+  @media (max-width:520px){ .field-grid{grid-template-columns:1fr;} }
+  .field-grid .field{width:100%;}
+  .field-grid .field input[type="number"]{width:100%;}
+
+  /* ---------- Results ---------- */
+  .verdict{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-left:3px solid var(--market);
+    border-radius:var(--radius);
+    padding:1.5rem 1.7rem;
+    font-size:1.12rem;
+    transition:border-left-color 0.2s ease;
+  }
+  .verdict strong{font-family:'IBM Plex Mono', monospace; font-weight:600;}
+  .verdict.property-wins{border-left-color:var(--property);}
+
+  .chart-section{
+    margin-top:1.8rem;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:1.7rem;
+  }
+  .chart-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem; flex-wrap:wrap; gap:0.6rem;}
+  .chart-head h3{font-size:1.05rem; font-weight:600; font-family:'IBM Plex Sans', sans-serif;}
+  .legend{display:flex; gap:1.5rem; font-size:0.85rem;}
+  .legend-item{display:flex; align-items:center; gap:0.5rem; color:var(--muted);}
+  .legend-swatch{width:14px; height:3px; display:inline-block;}
+  svg{width:100%; height:auto; display:block;}
+  .grid-line{stroke:var(--grid-line); stroke-width:1;}
+  .axis-label{fill:var(--muted); font-size:11px;}
+  .series-property{fill:none; stroke:var(--property); stroke-width:2.5;}
+  .series-market{fill:none; stroke:var(--market); stroke-width:2.5;}
+  .series-property-dashed{fill:none; stroke:var(--property); stroke-width:2; stroke-dasharray:6,4; opacity:0.75;}
+  .series-market-dashed{fill:none; stroke:var(--market); stroke-width:2; stroke-dasharray:6,4; opacity:0.75;}
+  .series-property-fill{fill:var(--property-soft); stroke:none;}
+  .series-market-fill{fill:var(--market-soft); stroke:none;}
+
+  .metrics-table{
+    margin-top:1.8rem;
+    width:100%;
+    border-collapse:collapse;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    overflow:hidden;
+    font-size:0.92rem;
+  }
+  .metrics-table th, .metrics-table td{
+    padding:0.85rem 1.1rem;
+    text-align:left;
+    border-bottom:1px solid var(--border);
+  }
+  .metrics-table th{
+    color:var(--muted);
+    font-weight:500;
+    font-size:0.8rem;
+  }
+  .metrics-table th.col-property{color:var(--property);}
+  .metrics-table th.col-market{color:var(--market);}
+  .metrics-table td.num{font-family:'IBM Plex Mono', monospace; text-align:right;}
+  .metrics-table tr:last-child td{border-bottom:none;}
+  .metrics-table td.row-label{color:var(--ink); font-size:0.88rem;}
+
+  /* ---------- Detail tables ---------- */
+  .table-section{
+    margin-top:2.6rem;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:1.7rem;
+  }
+  .table-head{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:1rem; flex-wrap:wrap; gap:0.8rem;
+  }
+  .table-head h3{font-size:1.05rem; font-weight:600; font-family:'IBM Plex Sans', sans-serif;}
+  .table-head p{color:var(--muted); font-size:0.82rem; margin:0.25rem 0 0; max-width:60ch;}
+  .year-picker{display:flex; align-items:center; gap:0.6rem;}
+  .year-picker label{font-size:0.82rem; color:var(--muted);}
+  .year-picker select{
+    background:var(--panel-alt);
+    border:1px solid var(--border);
+    color:var(--ink);
+    padding:0.45rem 0.6rem;
+    border-radius:var(--radius);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.88rem;
+  }
+  .table-scroll{
+    max-height:440px;
+    overflow:auto;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+  }
+  table.data-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:0.82rem;
+    white-space:nowrap;
+  }
+  table.data-table thead th{
+    position:sticky; top:0;
+    background:var(--panel-alt);
+    color:var(--muted);
+    font-weight:500;
+    text-align:right;
+    padding:0.6rem 0.8rem;
+    border-bottom:1px solid var(--border);
+    font-size:0.72rem;
+  }
+  table.data-table thead th:first-child{text-align:left;}
+  table.data-table td{
+    text-align:right;
+    padding:0.5rem 0.8rem;
+    border-bottom:1px solid var(--border);
+  }
+  table.data-table td:first-child{
+    text-align:left;
+    font-family:'IBM Plex Sans', sans-serif;
+    color:var(--muted);
+  }
+  table.data-table tbody tr:hover{background:rgba(237,237,231,0.03);}
+  table.data-table td.negative{color:var(--negative);}
+  table.data-table th.group-property{color:var(--property);}
+  table.data-table th.group-market{color:var(--market);}
+
+  .caveats{
+    margin-top:2.6rem;
+    padding-top:1.6rem;
+    border-top:1px solid var(--border);
+    color:var(--muted);
+    font-size:0.85rem;
+    max-width:78ch;
+  }
+  .caveats h3{font-size:0.95rem; color:var(--ink); margin-bottom:0.6rem; font-family:'IBM Plex Sans', sans-serif;}
+  .caveats ul{margin:0.5rem 0 0; padding-left:1.2rem;}
+  .caveats li{margin-bottom:0.35rem;}
+
+  input:focus-visible, select:focus-visible, .checkbox-field input:focus-visible{
+    outline:2px solid var(--market);
+    outline-offset:2px;
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <p class="kicker">A dollar can only be in one place at a time.</p>
+  <h1>Property, or portfolio?</h1>
+  <p class="sub">Model a rental property against an index fund, side by side, using the same starting capital and the same number of years. Change any number below, or rewind the clock and run the comparison on actual historical data.</p>
+</header>
+
+<main>
+
+  <section class="settings-bar" aria-label="Shared assumptions">
+    <div class="field">
+      <label for="years">Investment horizon</label>
+      <div class="input-wrap">
+        <input type="number" id="years" value="15" min="1" max="40" step="1">
+        <span class="unit">yrs</span>
+      </div>
+    </div>
+    <div class="checkbox-field">
+      <input type="checkbox" id="includeTax" checked>
+      <label for="includeTax">Estimate tax at sale</label>
+    </div>
+    <div class="field">
+      <label for="capGainsTax">Capital gains tax rate</label>
+      <div class="input-wrap">
+        <input type="number" id="capGainsTax" value="15" min="0" max="50" step="0.5">
+        <span class="unit">%</span>
+      </div>
+    </div>
+
+    <div class="historical-panel">
+      <div class="checkbox-field">
+        <input type="checkbox" id="useHistorical">
+        <label for="useHistorical">Backtest with historical data</label>
+      </div>
+      <div class="field" id="startYearField">
+        <label for="startYear">Start year</label>
+        <div class="input-wrap">
+          <input type="number" id="startYear" value="2000" min="1972" max="2025" step="1">
+        </div>
+      </div>
+      <p class="historical-note" id="historicalNote">Uses the actual S&amp;P CoreLogic Case-Shiller U.S. National Home Price Index for appreciation, Freddie Mac's 30-year fixed rate at purchase, and S&amp;P 500 total return (as a stand-in for VOO, which began trading in 2010) for the index fund — walking forward year by year from whatever start year you pick.</p>
+      <div class="checkbox-field">
+        <input type="checkbox" id="showTrailingHistory" checked>
+        <label for="showTrailingHistory">Also compare to actual trailing history</label>
+      </div>
+      <p class="historical-note" id="trailingNote">Regardless of the settings above, this overlays a dashed line showing what a property and portfolio worth exactly your inputs <em>today</em> would have actually done over the most recent stretch of years matching your horizon — the starting price and rent back in that year are worked out from the real historical record, so the trace lands on your numbers today rather than growing away from them.</p>
+    </div>
+  </section>
+
+  <section class="panels">
+
+    <div class="panel property-panel">
+      <div class="panel-head">
+        <h2>The property</h2>
+        <span class="panel-tag">leveraged, illiquid, hands-on</span>
+      </div>
+      <div class="field-grid">
+        <div class="field">
+          <label for="price">Purchase price</label>
+          <div class="input-wrap"><input type="number" id="price" value="350000" min="0" step="1000"><span class="unit">$</span></div>
+        </div>
+        <div class="field">
+          <label for="downPct">Down payment</label>
+          <div class="input-wrap"><input type="number" id="downPct" value="20" min="0" max="100" step="1"><span class="unit">%</span></div>
+        </div>
+        <div class="field" id="rateField">
+          <label for="rate">Mortgage rate</label>
+          <div class="input-wrap"><input type="number" id="rate" value="6.5" min="0" max="20" step="0.05"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="term">Loan term</label>
+          <div class="input-wrap"><input type="number" id="term" value="30" min="1" max="40" step="1"><span class="unit">yrs</span></div>
+        </div>
+        <div class="field" id="appreciationField">
+          <label for="appreciation">Appreciation</label>
+          <div class="input-wrap"><input type="number" id="appreciation" value="3.5" min="-10" max="20" step="0.1"><span class="unit">%/yr</span></div>
+        </div>
+        <div class="field">
+          <label for="rent">Starting rent</label>
+          <div class="input-wrap"><input type="number" id="rent" value="2200" min="0" step="25"><span class="unit">$/mo</span></div>
+        </div>
+        <div class="field">
+          <label for="rentGrowth">Rent growth</label>
+          <div class="input-wrap"><input type="number" id="rentGrowth" value="3" min="-10" max="15" step="0.1"><span class="unit">%/yr</span></div>
+        </div>
+        <div class="field">
+          <label for="vacancy">Vacancy &amp; credit loss</label>
+          <div class="input-wrap"><input type="number" id="vacancy" value="5" min="0" max="50" step="0.5"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="propTax">Property tax</label>
+          <div class="input-wrap"><input type="number" id="propTax" value="1.1" min="0" max="10" step="0.05"><span class="unit">%/yr</span></div>
+        </div>
+        <div class="field">
+          <label for="insurance">Insurance</label>
+          <div class="input-wrap"><input type="number" id="insurance" value="1400" min="0" step="50"><span class="unit">$/yr</span></div>
+        </div>
+        <div class="field">
+          <label for="maintenance">Maintenance &amp; repairs</label>
+          <div class="input-wrap"><input type="number" id="maintenance" value="1" min="0" max="10" step="0.1"><span class="unit">%/yr</span></div>
+        </div>
+        <div class="field">
+          <label for="closing">Closing costs</label>
+          <div class="input-wrap"><input type="number" id="closing" value="3" min="0" max="15" step="0.1"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="sellingCost">Selling costs at exit</label>
+          <div class="input-wrap"><input type="number" id="sellingCost" value="7" min="0" max="15" step="0.5"><span class="unit">%</span></div>
+        </div>
+      </div>
+      <div class="checkbox-field" style="margin-top:1.2rem;">
+        <input type="checkbox" id="investSurplus">
+        <label for="investSurplus">Invest surplus cash flow in the S&amp;P 500</label>
+      </div>
+      <p style="color:var(--muted); font-size:0.78rem; margin-top:0.5rem; margin-bottom:0;">Months the property is cash-flow positive, put that surplus into the same index fund the other side of this comparison uses, instead of letting it sit idle. Shortfall months still draw on outside cash either way.</p>
+    </div>
+
+    <div class="panel market-panel">
+      <div class="panel-head">
+        <h2>The index fund</h2>
+        <span class="panel-tag">unleveraged, liquid, passive</span>
+      </div>
+      <div class="ticker-wrap" aria-hidden="true">
+        <div class="ticker">
+          <span>S&amp;P 500 · 30yr avg return ≈ 10%</span>
+          <span>total market fund · expense ratio ≈ 0.03%</span>
+          <span>dividends reinvested compound quietly</span>
+          <span>S&amp;P 500 · 30yr avg return ≈ 10%</span>
+          <span>total market fund · expense ratio ≈ 0.03%</span>
+          <span>dividends reinvested compound quietly</span>
+        </div>
+      </div>
+      <div class="field-grid">
+        <div class="field" id="indexReturnField">
+          <label for="indexReturn">Expected total return</label>
+          <div class="input-wrap"><input type="number" id="indexReturn" value="9" min="-10" max="25" step="0.1"><span class="unit">%/yr</span></div>
+        </div>
+        <div class="field">
+          <label for="expenseRatio">Expense ratio</label>
+          <div class="input-wrap"><input type="number" id="expenseRatio" value="0.05" min="0" max="3" step="0.01"><span class="unit">%/yr</span></div>
+        </div>
+        <div class="field">
+          <label for="dividendYield">Dividend yield</label>
+          <div class="input-wrap"><input type="number" id="dividendYield" value="1.5" min="0" max="10" step="0.1"><span class="unit">%/yr</span></div>
+        </div>
+        <div class="field">
+          <label for="monthlyContribution">Extra monthly contribution</label>
+          <div class="input-wrap"><input type="number" id="monthlyContribution" value="0" min="0" step="25"><span class="unit">$/mo</span></div>
+        </div>
+      </div>
+      <p style="color:var(--muted); font-size:0.78rem; margin-top:1rem; margin-bottom:0;">Dividend yield is shown for reference — it's already folded into the total return above, not added on top. This field is on top of any cash the property strategy comes up short each month, which is automatically invested here too.</p>
+    </div>
+
+  </section>
+
+  <section class="results">
+    <div class="verdict" id="verdict"></div>
+    <p class="historical-note" id="trailingCompareLine" style="margin-top:0.9rem;"></p>
+
+    <div class="chart-section">
+      <div class="chart-head">
+        <h3>Net worth over time</h3>
+        <div class="legend" id="chartLegend">
+          <span class="legend-item"><span class="legend-swatch" style="background:var(--property);"></span>Property equity</span>
+          <span class="legend-item"><span class="legend-swatch" style="background:var(--market);"></span>Index fund</span>
+        </div>
+      </div>
+      <svg id="chart" viewBox="0 0 960 420" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+    <table class="metrics-table" id="metricsTable">
+      <thead>
+        <tr>
+          <th>Over the full horizon</th>
+          <th class="col-property num">Property</th>
+          <th class="col-market num">Index fund</th>
+        </tr>
+      </thead>
+      <tbody id="metricsBody"></tbody>
+    </table>
+
+    <div class="table-section">
+      <div class="table-head">
+        <div>
+          <h3>Returns on the home and the rent, year by year</h3>
+          <p>Home value and its appreciation that year, rent charged, the property's annual cash flow, and how the index fund's return and balance moved the same year.</p>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="yearlyTable">
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th class="group-property">Home value</th>
+              <th class="group-property">Appreciation</th>
+              <th class="group-property">Monthly rent</th>
+              <th class="group-property">Rent growth</th>
+              <th class="group-property">Annual cash flow</th>
+              <th class="group-property">Equity</th>
+              <th class="group-property">Property net worth</th>
+              <th class="group-market">Index return</th>
+              <th class="group-market">Index fund value</th>
+            </tr>
+          </thead>
+          <tbody id="yearlyBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-section" id="trailingHistorySection">
+      <div class="table-head">
+        <div>
+          <h3 id="trailingHistoryTitle">The same plan, run against actual history</h3>
+          <p>Your inputs describe the property and rent as of today — so this run anchors the ending price and rent to exactly those numbers, and works backward using the real recorded home-price, mortgage-rate, and S&amp;P 500 history (rent follows Wisconsin's actual median-rent trend rather than the flat rent-growth input) to figure out what the starting price, rent, and loan would actually have been that many years ago.</p>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="yearlyTableHistorical">
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th class="group-property">Home value</th>
+              <th class="group-property">Appreciation</th>
+              <th class="group-property">Monthly rent</th>
+              <th class="group-property">Rent growth</th>
+              <th class="group-property">Annual cash flow</th>
+              <th class="group-property">Equity</th>
+              <th class="group-property">Property net worth</th>
+              <th class="group-market">Index return</th>
+              <th class="group-market">Index fund value</th>
+            </tr>
+          </thead>
+          <tbody id="yearlyBodyHistorical"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-section">
+      <div class="table-head">
+        <div>
+          <h3>Cash flow by month</h3>
+          <p>Every dollar in and out for one year of the horizon — rent collected and expenses paid on the property side; on the fund side, any extra contribution plus a dollar-for-dollar match of whatever the property fell short that month.</p>
+        </div>
+        <div class="year-picker">
+          <label for="monthYearSelect">Year</label>
+          <select id="monthYearSelect"></select>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="monthlyTable">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th class="group-property">Rent</th>
+              <th class="group-property">Mortgage P&amp;I</th>
+              <th class="group-property">Tax</th>
+              <th class="group-property">Insurance</th>
+              <th class="group-property">Maintenance</th>
+              <th class="group-property">Net cash flow</th>
+              <th class="group-property">of which, invested</th>
+              <th class="group-market">Fund contribution</th>
+              <th class="group-market">of which, shortfall match</th>
+            </tr>
+          </thead>
+          <tbody id="monthlyBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <p class="historical-note">The monthly cash-flow table above reflects the assumptions-based run only — the trailing-history comparison is shown at the annual level.</p>
+  </section>
+
+  <section class="caveats">
+    <h3>What this model assumes</h3>
+    <ul>
+      <li>Both strategies start with the same cash: the property's down payment plus closing costs is treated as the index fund's lump-sum investment.</li>
+      <li>Whenever the property runs a cash-flow shortfall in a given month, that same amount is treated as also going into the index fund that month — the two strategies always draw on the same amount of outside cash. By default, months where the property is cash-flow positive, that surplus just accumulates as uninvested savings on the property side; check "Invest surplus cash flow in the S&amp;P 500" to have it invested and compounding instead, using the same return assumptions as the index fund side.</li>
+      <li>In backtest mode, the mortgage rate is locked in at whatever the historical rate was in the start year, matching how a real fixed-rate loan works — appreciation and market return still move year to year with the historical record.</li>
+      <li>Historical figures are annual national averages (S&amp;P CoreLogic Case-Shiller U.S. National Home Price Index, Freddie Mac PMMS 30-year fixed rate, S&amp;P 500 total return as a proxy for VOO before its 2010 launch), except rent in the trailing-history comparison, which follows Wisconsin's actual median-rent trend — any specific property, fund, or local rental market will deviate from these, sometimes by a lot.</li>
+      <li>The tax estimate is a simplified capital-gains calculation at a single exit — it ignores mortgage-interest deductions, depreciation recapture, 1031 exchanges, and fund-level tax-loss harvesting, all of which can change a real outcome noticeably.</li>
+      <li>This is a comparison of assumptions you control, not a forecast or financial advice — small changes to appreciation, return, or tax inputs can flip which side wins.</li>
+    </ul>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+
+  // ---------- Historical data: annual figures, 1972–2025 ----------
+  // Home appreciation: S&P CoreLogic Case-Shiller U.S. National Home Price Index, year-over-year % change.
+  // Mortgage rate: Freddie Mac PMMS 30-year fixed, annual average.
+  // Index return: S&P 500 total return (dividends reinvested) — used as a proxy for VOO, which launched in Sep 2010.
+  const HIST_START = 1972;
+  const HIST_END = 2025;
+  const HOME_APPRECIATION = [3.33,2.91,9.34,8.42,7.62,14.20,13.80,12.47,6.64,4.76,1.65,4.08,5.12,6.02,7.45,12.51,7.21,4.38,-0.69,-0.18,0.84,2.16,2.52,1.81,2.43,4.02,6.43,7.69,9.25,6.68,9.55,9.81,13.64,13.51,1.74,-5.40,-11.99,-3.85,-4.13,-3.89,4.31,9.60,6.57,4.55,5.08,5.79,5.79,3.44,6.05,17.05,14.78,2.50,5.10,3.10];
+  const MORTGAGE_RATE = [7.38,8.04,9.19,9.05,8.87,8.85,9.64,11.20,13.74,16.64,16.04,13.24,13.88,12.43,10.19,10.21,10.34,10.32,10.13,9.25,8.39,7.31,8.38,7.93,7.81,7.60,6.94,7.44,8.05,6.97,6.54,5.83,5.84,5.87,6.41,6.34,6.03,5.04,4.69,4.45,3.66,3.98,4.17,3.85,3.65,3.99,4.54,3.94,3.11,2.96,5.34,6.81,6.72,6.60];
+  const INDEX_RETURN = [19.00,-14.69,-26.47,37.23,23.93,-7.16,6.57,18.61,32.50,-4.92,21.55,22.56,6.27,31.73,18.67,5.25,16.61,31.69,-3.10,30.47,7.62,10.08,1.32,37.58,22.96,33.36,28.58,21.04,-9.10,-11.89,-22.10,28.68,10.88,4.91,15.79,5.49,-37.00,26.46,15.06,2.11,16.00,32.39,13.69,1.38,11.96,21.83,-4.38,31.49,18.40,28.71,-18.11,26.29,25.02,17.88];
+  // Wisconsin median gross rent, year-over-year % change. Decade points are Census
+  // decennial figures (1970/80/90/2000); 2005–2019 and 2022–2025 are Census ACS annual
+  // medians; years without a direct annual reading are geometrically interpolated
+  // between the nearest known points, so this is a smoothed long-run trend rather than
+  // a year-by-year survey reading everywhere.
+  const WISCONSIN_RENT_GROWTH = [7.55,7.55,7.55,7.55,7.55,7.55,7.55,7.55,7.55,5.48,5.48,5.48,5.48,5.48,5.48,5.48,5.47,5.47,5.48,3.07,3.07,3.07,3.07,3.07,3.07,3.07,3.07,3.07,3.07,3.55,3.55,3.55,3.55,3.55,2.33,2.28,4.61,0.57,0.99,3.36,0.54,2.02,3.17,1.28,1.26,2.12,3.42,2.36,0.00,5.50,5.50,9.43,6.91,6.64];
+
+  function histLookup(arr, year){
+    const idx = year - HIST_START;
+    if (idx < 0) return arr[0];
+    if (idx >= arr.length) return arr[arr.length-1];
+    return arr[idx];
+  }
+
+  // How much a $1 home value would compound to over a historical window,
+  // using the actual year-by-year appreciation record (monthly-compounded
+  // within each calendar year, same method the main simulation uses). Used
+  // to work backward from a present-day price to what it would have been
+  // at the start of that window.
+  function historicalAppreciationFactor(startYear, years){
+    let multiplier = 1;
+    const totalMonths = Math.round(years * 12);
+    for (let m = 1; m <= totalMonths; m++){
+      const yearIndex = Math.floor((m-1)/12);
+      const calendarYear = startYear + yearIndex;
+      const appreciationPct = histLookup(HOME_APPRECIATION, calendarYear);
+      const monthlyRate = Math.pow(1 + appreciationPct/100, 1/12) - 1;
+      multiplier *= (1 + monthlyRate);
+    }
+    return multiplier;
+  }
+
+  // Same idea for rent, using Wisconsin's actual median-rent trend (rent only
+  // steps once a year in this model, so no monthly compounding needed here).
+  function historicalRentGrowthFactor(startYear, years){
+    let multiplier = 1;
+    for (let yearIndex = 0; yearIndex < years; yearIndex++){
+      const calendarYear = startYear + yearIndex;
+      const growthPct = histLookup(WISCONSIN_RENT_GROWTH, calendarYear);
+      multiplier *= (1 + growthPct/100);
+    }
+    return multiplier;
+  }
+
+  // Fields that just recalculate as you type — nothing about them changes the
+  // historical UI (which fields are disabled, the year range, etc.), so a plain
+  // update() on every keystroke is all they need.
+  const liveInputs = ['includeTax','capGainsTax','price','downPct','rate','term','appreciation',
+    'rent','rentGrowth','vacancy','propTax','insurance','maintenance','closing','sellingCost',
+    'indexReturn','expenseRatio','dividendYield','monthlyContribution','showTrailingHistory','investSurplus'];
+
+  liveInputs.forEach(id=>{
+    const el = $(id);
+    el.addEventListener('input', update);
+    el.addEventListener('change', update);
+  });
+
+  // startYear and years interact with syncHistoricalUI (which can rewrite field
+  // values, e.g. clamping to the available data range). Rewriting a field while
+  // the person is still typing into it fights the keystrokes, so on 'input' we
+  // only preview (commit=false, no writes back to the field being edited) and
+  // save the clamp/correction for 'change' (blur / enter / spinner), where
+  // commit=true is safe to apply.
+  $('useHistorical').addEventListener('change', function(){ syncHistoricalUI(true); update(); });
+  $('startYear').addEventListener('input', function(){ syncHistoricalUI(false); update(); });
+  $('startYear').addEventListener('change', function(){ syncHistoricalUI(true); update(); });
+  $('years').addEventListener('input', update);
+  $('years').addEventListener('change', function(){ syncHistoricalUI(true); update(); });
+
+  function fmtMoney(v){
+    const sign = v < 0 ? '-' : '';
+    const abs = Math.abs(v);
+    return sign + '$' + Math.round(abs).toLocaleString('en-US');
+  }
+  function fmtMoneyShort(v){
+    const sign = v < 0 ? '-' : '';
+    const abs = Math.abs(v);
+    if (abs >= 1000000) return sign + '$' + (abs/1000000).toFixed(1) + 'M';
+    if (abs >= 1000) return sign + '$' + Math.round(abs/1000) + 'k';
+    return sign + '$' + Math.round(abs);
+  }
+  function fmtPct(v){
+    return (v>=0?'':'-') + Math.abs(v).toFixed(1) + '%';
+  }
+  function fmtPct2(v){
+    return (v>=0?'+':'') + v.toFixed(2) + '%';
+  }
+
+  // commit=false: read-only preview (used while the field is actively being
+  //   typed into) — never writes a corrected value back into startYear/years.
+  // commit=true: also normalizes/clamps those two fields (used on blur, enter,
+  //   the checkbox toggle, or the spinner buttons) — safe to rewrite then.
+  function syncHistoricalUI(commit){
+    const useHistorical = $('useHistorical').checked;
+    const startYearEl = $('startYear');
+    const startYearField = $('startYearField');
+    const yearsEl = $('years');
+
+    startYearField.style.display = useHistorical ? 'flex' : 'none';
+
+    ['appreciationField','rateField','indexReturnField'].forEach(id=>{
+      $(id).classList.toggle('is-disabled', useHistorical);
+    });
+    $('appreciation').disabled = useHistorical;
+    $('rate').disabled = useHistorical;
+    $('indexReturn').disabled = useHistorical;
+
+    if (useHistorical){
+      let rawStartYear = parseInt(startYearEl.value, 10);
+      if (isNaN(rawStartYear)) rawStartYear = 2000;
+      const startYear = Math.min(HIST_END, Math.max(HIST_START, rawStartYear));
+
+      if (commit){
+        startYearEl.value = startYear;
+      }
+
+      const maxYears = HIST_END - startYear + 1;
+      yearsEl.max = maxYears;
+      if (commit && parseFloat(yearsEl.value) > maxYears) yearsEl.value = maxYears;
+      if (commit && parseFloat(yearsEl.value) < 1) yearsEl.value = 1;
+
+      $('rate').value = histLookup(MORTGAGE_RATE, startYear).toFixed(2);
+      $('appreciation').value = histLookup(HOME_APPRECIATION, startYear).toFixed(2);
+      $('indexReturn').value = histLookup(INDEX_RETURN, startYear).toFixed(2);
+
+      $('historicalNote').innerHTML = 'Walking forward from <strong>' + startYear + '</strong>, ' + maxYears +
+        ' years of actual data are available (through ' + HIST_END + '). The mortgage rate locks in at ' +
+        histLookup(MORTGAGE_RATE, startYear).toFixed(2) + '%, the rate on a 30-year fixed loan taken out that year — appreciation and market return still move with the historical record shown in the tables below.';
+    } else {
+      yearsEl.max = 40;
+      if (commit && parseFloat(yearsEl.value) > 40) yearsEl.value = 40;
+      if (commit && parseFloat(yearsEl.value) < 1) yearsEl.value = 1;
+      $('historicalNote').innerHTML = 'Uses the actual S&amp;P CoreLogic Case-Shiller U.S. National Home Price Index for appreciation, Freddie Mac\'s 30-year fixed rate at purchase, and S&amp;P 500 total return (as a stand-in for VOO, which began trading in 2010) for the index fund — walking forward year by year from whatever start year you pick.';
+    }
+  }
+
+  function calculate(overrides){
+    overrides = overrides || {};
+    const useHistorical = overrides.useHistorical !== undefined ? overrides.useHistorical : $('useHistorical').checked;
+    const startYear = overrides.startYear !== undefined ? overrides.startYear : (parseInt($('startYear').value, 10) || 2000);
+    const yearsRaw = overrides.years !== undefined ? overrides.years : (parseFloat($('years').value) || 1);
+    const years = Math.max(1, Math.round(yearsRaw)); // whole years — historical lookups are indexed by calendar year
+    const includeTax = $('includeTax').checked;
+    const capGainsTaxPct = parseFloat($('capGainsTax').value) || 0;
+
+    const price = overrides.price !== undefined ? overrides.price : (parseFloat($('price').value) || 0);
+    const downPct = parseFloat($('downPct').value) || 0;
+    const flatRate = parseFloat($('rate').value) || 0;
+    const term = Math.max(1, parseFloat($('term').value) || 1);
+    const flatAppreciationPct = parseFloat($('appreciation').value) || 0;
+    const rentStart = overrides.rentStart !== undefined ? overrides.rentStart : (parseFloat($('rent').value) || 0);
+    const rentGrowthPct = parseFloat($('rentGrowth').value) || 0;
+    const useWisconsinRentGrowth = !!overrides.useWisconsinRentGrowth;
+    const investSurplus = overrides.investSurplus !== undefined ? overrides.investSurplus : $('investSurplus').checked;
+    const vacancyPct = parseFloat($('vacancy').value) || 0;
+    const propTaxPct = parseFloat($('propTax').value) || 0;
+    const insuranceAnnual = parseFloat($('insurance').value) || 0;
+    const maintenancePct = parseFloat($('maintenance').value) || 0;
+    const closingPct = parseFloat($('closing').value) || 0;
+    const sellingPct = parseFloat($('sellingCost').value) || 0;
+
+    const flatIndexReturnPct = parseFloat($('indexReturn').value) || 0;
+    const expenseRatioPct = parseFloat($('expenseRatio').value) || 0;
+    const monthlyContribution = parseFloat($('monthlyContribution').value) || 0;
+
+    const rate = useHistorical ? histLookup(MORTGAGE_RATE, startYear) : flatRate;
+
+    const downPayment = price * downPct / 100;
+    const closingCosts = price * closingPct / 100;
+    const loanAmount = Math.max(0, price - downPayment);
+    const monthlyRate = rate / 100 / 12;
+    const nPayments = Math.round(term * 12);
+
+    let monthlyPI = 0;
+    if (loanAmount > 0){
+      monthlyPI = monthlyRate > 0
+        ? loanAmount * monthlyRate / (1 - Math.pow(1+monthlyRate, -nPayments))
+        : loanAmount / nPayments;
+    }
+
+    const horizonMonths = Math.round(years * 12);
+
+    let loanBalance = loanAmount;
+    let cashReserve = 0;
+    let extraCashInjected = 0;
+    let propertyValue = price;
+    let indexValue = downPayment + closingCosts;
+    let indexContributed = 0;
+
+    const propertySeries = [downPayment]; // net worth at t=0 (equity only)
+    const indexSeries = [indexValue];
+    const yearlyRows = [];
+    const monthlyDetail = []; // grouped by horizon-year index
+
+    // Rent only steps once a year in this model. Precompute the multiplier for
+    // each year of the horizon so the per-year rate can vary — either your flat
+    // "rent growth" input, or (for the trailing-history comparison) Wisconsin's
+    // actual year-by-year median-rent trend.
+    const rentMultiplierByYearIndex = new Array(years);
+    { 
+      let cum = 1;
+      for (let yi = 0; yi < years; yi++){
+        rentMultiplierByYearIndex[yi] = cum;
+        const calendarYearForRent = startYear + yi;
+        const stepGrowthPct = useWisconsinRentGrowth ? histLookup(WISCONSIN_RENT_GROWTH, calendarYearForRent) : rentGrowthPct;
+        cum *= (1 + stepGrowthPct/100);
+      }
+    }
+
+    let yearCashFlowSum = 0;
+    let yearRentAtStart = rentStart;
+    let currentMonths = [];
+
+    for (let m = 1; m <= horizonMonths; m++){
+      const yearIndex = Math.floor((m-1)/12);
+      const calendarYear = startYear + yearIndex;
+
+      const appreciationPct = useHistorical ? histLookup(HOME_APPRECIATION, calendarYear) : flatAppreciationPct;
+      const indexReturnPct = useHistorical ? histLookup(INDEX_RETURN, calendarYear) : flatIndexReturnPct;
+      const rentGrowthPctForYear = useWisconsinRentGrowth ? histLookup(WISCONSIN_RENT_GROWTH, calendarYear) : rentGrowthPct;
+      const monthlyAppreciationRate = Math.pow(1 + appreciationPct/100, 1/12) - 1;
+      const netAnnualIndexReturn = indexReturnPct - expenseRatioPct;
+      const indexMonthlyRate = Math.pow(1 + netAnnualIndexReturn/100, 1/12) - 1;
+
+      propertyValue = propertyValue * (1 + monthlyAppreciationRate);
+
+      const currentRent = rentStart * rentMultiplierByYearIndex[yearIndex];
+      const effectiveRent = currentRent * (1 - vacancyPct/100);
+
+      const monthlyTax = propertyValue * propTaxPct/100/12;
+      const monthlyInsurance = insuranceAnnual/12;
+      const monthlyMaintenance = propertyValue * maintenancePct/100/12;
+
+      const piThisMonth = m <= nPayments ? monthlyPI : 0;
+      const cashFlow = effectiveRent - piThisMonth - monthlyTax - monthlyInsurance - monthlyMaintenance;
+      const surplus = cashFlow > 0 ? cashFlow : 0;
+      if (investSurplus){
+        // Surplus months' cash goes into the same index fund the other side of
+        // the comparison uses, and keeps compounding every month after that —
+        // not just added up at face value.
+        cashReserve = cashReserve * (1 + indexMonthlyRate) + surplus;
+      } else {
+        cashReserve += cashFlow;
+      }
+      yearCashFlowSum += cashFlow;
+      const shortfall = cashFlow < 0 ? -cashFlow : 0;
+      if (shortfall > 0) extraCashInjected += shortfall;
+
+      if (m <= nPayments && loanBalance > 0){
+        const interestPortion = loanBalance * monthlyRate;
+        const principalPortion = Math.min(loanBalance, piThisMonth - interestPortion);
+        loanBalance = Math.max(0, loanBalance - principalPortion);
+      }
+
+      // Whatever the property comes up short each month is cash the owner has
+      // to put in from elsewhere — money that, in the index fund scenario,
+      // would simply be invested instead. So it's matched into the fund here,
+      // on top of any extra monthly contribution set above.
+      const totalContribution = monthlyContribution + shortfall;
+      indexValue = indexValue * (1 + indexMonthlyRate) + totalContribution;
+      indexContributed += totalContribution;
+
+      currentMonths.push({
+        monthInYear: ((m-1) % 12) + 1,
+        rent: effectiveRent,
+        pi: piThisMonth,
+        tax: monthlyTax,
+        insurance: monthlyInsurance,
+        maintenance: monthlyMaintenance,
+        cashFlow: cashFlow,
+        contribution: totalContribution,
+        shortfallMatched: shortfall,
+        surplusInvested: investSurplus ? surplus : 0
+      });
+
+      if (m % 12 === 0){
+        const equity = propertyValue - loanBalance;
+        propertySeries.push(equity + cashReserve);
+        indexSeries.push(indexValue);
+
+        yearlyRows.push({
+          label: useHistorical ? String(calendarYear) : ('Year ' + (yearIndex+1)),
+          homeValue: propertyValue,
+          appreciationPct: appreciationPct,
+          monthlyRent: currentRent,
+          rentGrowthPct: rentGrowthPctForYear,
+          annualCashFlow: yearCashFlowSum,
+          equity: equity,
+          propertyNetWorth: equity + cashReserve,
+          indexReturnPct: indexReturnPct,
+          indexValue: indexValue
+        });
+
+        monthlyDetail.push(currentMonths);
+        currentMonths = [];
+        yearCashFlowSum = 0;
+      }
+    }
+
+    const finalPropertyValue = propertyValue;
+    const saleCosts = finalPropertyValue * sellingPct/100;
+    const propertyNetWorthPreTax = (finalPropertyValue - loanBalance) - saleCosts + cashReserve;
+    const propertyCostBasis = downPayment + closingCosts + extraCashInjected;
+    const propertyGain = propertyNetWorthPreTax - propertyCostBasis;
+    const propertyAfterTax = includeTax ? propertyNetWorthPreTax - Math.max(0, propertyGain) * capGainsTaxPct/100 : propertyNetWorthPreTax;
+
+    const indexNetWorthPreTax = indexValue;
+    const indexCostBasis = (downPayment + closingCosts) + indexContributed;
+    const indexGain = indexNetWorthPreTax - indexCostBasis;
+    const indexAfterTax = includeTax ? indexNetWorthPreTax - Math.max(0, indexGain) * capGainsTaxPct/100 : indexNetWorthPreTax;
+
+    const propertyCAGR = propertyCostBasis > 0 ? (Math.pow(Math.max(propertyNetWorthPreTax,0.01)/propertyCostBasis, 1/years) - 1) * 100 : 0;
+    const indexCAGR = indexCostBasis > 0 ? (Math.pow(Math.max(indexNetWorthPreTax,0.01)/indexCostBasis, 1/years) - 1) * 100 : 0;
+
+    return {
+      years, includeTax, useHistorical, startYear, rate,
+      propertySeries, indexSeries, yearlyRows, monthlyDetail,
+      propertyNetWorthPreTax, propertyCostBasis, propertyGain, propertyAfterTax, propertyCAGR,
+      indexNetWorthPreTax, indexCostBasis, indexGain, indexAfterTax, indexCAGR
+    };
+  }
+
+  function drawChart(propertySeries, indexSeries, years, shadow){
+    const svg = $('chart');
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    const W = 960, H = 420;
+    const padL = 64, padR = 20, padT = 20, padB = 34;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+
+    let allVals = propertySeries.concat(indexSeries);
+    if (shadow) allVals = allVals.concat(shadow.propertySeries, shadow.indexSeries);
+    const maxVal = Math.max(...allVals) * 1.08;
+    const minVal = Math.min(0, ...allVals);
+
+    const xFor = i => padL + (i/years) * plotW;
+    const yFor = v => padT + (1 - (v - minVal)/(maxVal - minVal)) * plotH;
+
+    const ns = 'http://www.w3.org/2000/svg';
+    const gridCount = 5;
+    for (let g = 0; g <= gridCount; g++){
+      const val = minVal + (maxVal-minVal) * g/gridCount;
+      const y = yFor(val);
+      const line = document.createElementNS(ns,'line');
+      line.setAttribute('x1', padL); line.setAttribute('x2', W-padR);
+      line.setAttribute('y1', y); line.setAttribute('y2', y);
+      line.setAttribute('class','grid-line');
+      svg.appendChild(line);
+
+      const label = document.createElementNS(ns,'text');
+      label.setAttribute('x', padL - 10); label.setAttribute('y', y+4);
+      label.setAttribute('text-anchor','end');
+      label.setAttribute('class','axis-label');
+      label.textContent = fmtMoneyShort(val);
+      svg.appendChild(label);
+    }
+
+    const xStep = Math.max(1, Math.ceil(years/8));
+    for (let yr = 0; yr <= years; yr += xStep){
+      const x = xFor(yr);
+      const label = document.createElementNS(ns,'text');
+      label.setAttribute('x', x); label.setAttribute('y', H-10);
+      label.setAttribute('text-anchor','middle');
+      label.setAttribute('class','axis-label');
+      label.textContent = 'yr ' + yr;
+      svg.appendChild(label);
+    }
+
+    function seriesPath(series){
+      return series.map((v,i)=> (i===0?'M':'L') + xFor(i).toFixed(1) + ',' + yFor(v).toFixed(1)).join(' ');
+    }
+    function seriesArea(series){
+      const zeroY = yFor(Math.max(minVal,0));
+      let d = 'M' + xFor(0).toFixed(1) + ',' + zeroY.toFixed(1) + ' ';
+      series.forEach((v,i)=>{ d += 'L' + xFor(i).toFixed(1) + ',' + yFor(v).toFixed(1) + ' '; });
+      d += 'L' + xFor(series.length-1).toFixed(1) + ',' + zeroY.toFixed(1) + ' Z';
+      return d;
+    }
+
+    const propFill = document.createElementNS(ns,'path');
+    propFill.setAttribute('d', seriesArea(propertySeries));
+    propFill.setAttribute('class','series-property-fill');
+    svg.appendChild(propFill);
+
+    if (shadow){
+      const propDashed = document.createElementNS(ns,'path');
+      propDashed.setAttribute('d', seriesPath(shadow.propertySeries));
+      propDashed.setAttribute('class','series-property-dashed');
+      svg.appendChild(propDashed);
+
+      const idxDashed = document.createElementNS(ns,'path');
+      idxDashed.setAttribute('d', seriesPath(shadow.indexSeries));
+      idxDashed.setAttribute('class','series-market-dashed');
+      svg.appendChild(idxDashed);
+    }
+
+    const propLine = document.createElementNS(ns,'path');
+    propLine.setAttribute('d', seriesPath(propertySeries));
+    propLine.setAttribute('class','series-property');
+    svg.appendChild(propLine);
+
+    const idxLine = document.createElementNS(ns,'path');
+    idxLine.setAttribute('d', seriesPath(indexSeries));
+    idxLine.setAttribute('class','series-market');
+    svg.appendChild(idxLine);
+  }
+
+  function renderYearlyTable(rows, bodyId){
+    const body = $(bodyId || 'yearlyBody');
+    body.innerHTML = '';
+    rows.forEach(row=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + row.label + '</td>' +
+        '<td>' + fmtMoney(row.homeValue) + '</td>' +
+        '<td class="' + (row.appreciationPct<0?'negative':'') + '">' + fmtPct2(row.appreciationPct) + '</td>' +
+        '<td>' + fmtMoney(row.monthlyRent) + '</td>' +
+        '<td class="' + (row.rentGrowthPct<0?'negative':'') + '">' + fmtPct2(row.rentGrowthPct) + '</td>' +
+        '<td class="' + (row.annualCashFlow<0?'negative':'') + '">' + fmtMoney(row.annualCashFlow) + '</td>' +
+        '<td>' + fmtMoney(row.equity) + '</td>' +
+        '<td>' + fmtMoney(row.propertyNetWorth) + '</td>' +
+        '<td class="' + (row.indexReturnPct<0?'negative':'') + '">' + fmtPct2(row.indexReturnPct) + '</td>' +
+        '<td>' + fmtMoney(row.indexValue) + '</td>';
+      body.appendChild(tr);
+    });
+  }
+
+  function renderMonthlyTable(monthsForYear){
+    const body = $('monthlyBody');
+    body.innerHTML = '';
+    const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    (monthsForYear || []).forEach(mo=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + MONTH_NAMES[mo.monthInYear-1] + '</td>' +
+        '<td>' + fmtMoney(mo.rent) + '</td>' +
+        '<td>' + fmtMoney(mo.pi) + '</td>' +
+        '<td>' + fmtMoney(mo.tax) + '</td>' +
+        '<td>' + fmtMoney(mo.insurance) + '</td>' +
+        '<td>' + fmtMoney(mo.maintenance) + '</td>' +
+        '<td class="' + (mo.cashFlow<0?'negative':'') + '">' + fmtMoney(mo.cashFlow) + '</td>' +
+        '<td>' + (mo.surplusInvested > 0 ? fmtMoney(mo.surplusInvested) : '—') + '</td>' +
+        '<td>' + fmtMoney(mo.contribution) + '</td>' +
+        '<td>' + (mo.shortfallMatched > 0 ? fmtMoney(mo.shortfallMatched) : '—') + '</td>';
+      body.appendChild(tr);
+    });
+  }
+
+  function populateYearSelect(yearlyRows, previousSelection){
+    const select = $('monthYearSelect');
+    const prev = previousSelection != null ? previousSelection : select.value;
+    select.innerHTML = '';
+    yearlyRows.forEach((row, i)=>{
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = row.label;
+      select.appendChild(opt);
+    });
+    const prevIndex = parseInt(prev, 10);
+    if (!isNaN(prevIndex) && prevIndex >= 0 && prevIndex < yearlyRows.length){
+      select.value = prevIndex;
+    } else {
+      select.value = yearlyRows.length - 1;
+    }
+  }
+
+  let lastResult = null;
+
+  $('monthYearSelect').addEventListener('change', function(){
+    if (!lastResult) return;
+    const idx = parseInt(this.value, 10);
+    renderMonthlyTable(lastResult.monthlyDetail[idx]);
+  });
+
+  function update(){
+    const r = calculate();
+    lastResult = r;
+
+    // Trailing-history shadow: the same plan, run against the most recent
+    // stretch of real data long enough to cover the chosen horizon — shown
+    // for comparison even when the main run isn't in backtest mode at all,
+    // or is backtesting a different (earlier) start year.
+    //
+    // The inputs (price, rent) describe the property as of *today*, not as
+    // of the start of some past window — so rather than treating today's
+    // price as the historical purchase price and growing it forward (which
+    // would land on a made-up "current" value that ignores what the input
+    // actually says), work backward: figure out what price/rent, if grown
+    // forward through the real historical record, would land exactly on
+    // today's inputs. That's what actually gets simulated.
+    const showTrailing = $('showTrailingHistory').checked;
+    const shadowStartYear = Math.max(HIST_START, HIST_END - r.years + 1);
+    const isDuplicateOfMain = r.useHistorical && r.startYear === shadowStartYear;
+    const shouldShowShadow = showTrailing && !isDuplicateOfMain;
+
+    let shadow = null;
+    let backStartPrice = null, backStartRent = null;
+    if (shouldShowShadow){
+      const inputPrice = parseFloat($('price').value) || 0;
+      const inputRent = parseFloat($('rent').value) || 0;
+
+      const appreciationFactor = historicalAppreciationFactor(shadowStartYear, r.years);
+      const rentGrowthFactor = historicalRentGrowthFactor(shadowStartYear, r.years);
+
+      backStartPrice = appreciationFactor > 0 ? inputPrice / appreciationFactor : inputPrice;
+      backStartRent = rentGrowthFactor > 0 ? inputRent / rentGrowthFactor : inputRent;
+
+      shadow = calculate({
+        useHistorical: true, startYear: shadowStartYear, years: r.years,
+        price: backStartPrice, rentStart: backStartRent, useWisconsinRentGrowth: true
+      });
+    }
+
+    drawChart(r.propertySeries, r.indexSeries, r.years, shadow);
+
+    const legend = $('chartLegend');
+    legend.innerHTML =
+      '<span class="legend-item"><span class="legend-swatch" style="background:var(--property);"></span>Property equity</span>' +
+      '<span class="legend-item"><span class="legend-swatch" style="background:var(--market);"></span>Index fund</span>';
+    if (shadow){
+      legend.innerHTML +=
+        '<span class="legend-item"><span class="legend-swatch" style="background:var(--property); opacity:0.6; border-top:2px dashed var(--property); height:0;"></span>Property (trailing history)</span>' +
+        '<span class="legend-item"><span class="legend-swatch" style="background:var(--market); opacity:0.6; border-top:2px dashed var(--market); height:0;"></span>Index (trailing history)</span>';
+    }
+
+    const verdictEl = $('verdict');
+    const propFinal = r.includeTax ? r.propertyAfterTax : r.propertyNetWorthPreTax;
+    const idxFinal = r.includeTax ? r.indexAfterTax : r.indexNetWorthPreTax;
+    const diff = idxFinal - propFinal;
+    const winnerIsIndex = diff >= 0;
+    verdictEl.classList.toggle('property-wins', !winnerIsIndex);
+
+    const winnerName = winnerIsIndex ? 'the index fund' : 'the property';
+    const pct = (Math.abs(diff) / Math.max(1, Math.min(propFinal, idxFinal))) * 100;
+
+    const spanText = r.useHistorical ? (r.startYear + '–' + (r.startYear + r.years)) : (r.years + ' years');
+    verdictEl.innerHTML = 'Over <strong>' + spanText + '</strong>, ' + winnerName + ' comes out ahead by <strong>' +
+      fmtMoney(Math.abs(diff)) + '</strong> (about ' + pct.toFixed(0) + '% more) — property lands at <strong>' +
+      fmtMoney(propFinal) + '</strong>, the index fund at <strong>' + fmtMoney(idxFinal) + '</strong>' +
+      (r.includeTax ? ', after the estimated tax at sale.' : '.');
+
+    const compareLine = $('trailingCompareLine');
+    if (shadow){
+      const shadowPropFinal = r.includeTax ? shadow.propertyAfterTax : shadow.propertyNetWorthPreTax;
+      const shadowIdxFinal = r.includeTax ? shadow.indexAfterTax : shadow.indexNetWorthPreTax;
+      compareLine.style.display = 'block';
+      compareLine.innerHTML = 'For comparison: a property worth <strong>' + fmtMoney(parseFloat($('price').value)||0) +
+        '</strong> today would have cost about <strong>' + fmtMoney(backStartPrice) + '</strong> back in <strong>' + shadowStartYear +
+        '</strong>, with a <strong>' + shadow.rate.toFixed(2) + '%</strong> mortgage rate — run that purchase forward on real historical data through today and the property lands at <strong>' +
+        fmtMoney(shadowPropFinal) + '</strong>, the index fund at <strong>' + fmtMoney(shadowIdxFinal) + '</strong>.';
+    } else {
+      compareLine.style.display = 'none';
+      compareLine.innerHTML = '';
+    }
+
+    const rows = [
+      ['Total cash invested', r.propertyCostBasis, r.indexCostBasis],
+      ['Net worth before tax', r.propertyNetWorthPreTax, r.indexNetWorthPreTax],
+      ['Total gain', r.propertyGain, r.indexGain],
+    ];
+    if (r.includeTax){
+      rows.push(['Net worth after tax', r.propertyAfterTax, r.indexAfterTax]);
+    }
+    rows.push(['Annualized return (CAGR)', r.propertyCAGR, r.indexCAGR, true]);
+
+    const body = $('metricsBody');
+    body.innerHTML = '';
+    rows.forEach(row => {
+      const tr = document.createElement('tr');
+      const isPct = row[3];
+      tr.innerHTML = '<td class="row-label">' + row[0] + '</td>' +
+        '<td class="num">' + (isPct ? fmtPct(row[1]) : fmtMoney(row[1])) + '</td>' +
+        '<td class="num">' + (isPct ? fmtPct(row[2]) : fmtMoney(row[2])) + '</td>';
+      body.appendChild(tr);
+    });
+
+    renderYearlyTable(r.yearlyRows, 'yearlyBody');
+    const prevYearSelection = $('monthYearSelect').value;
+    populateYearSelect(r.yearlyRows, prevYearSelection);
+    const selectedIdx = parseInt($('monthYearSelect').value, 10);
+    renderMonthlyTable(r.monthlyDetail[selectedIdx]);
+
+    const trailingSection = $('trailingHistorySection');
+    if (shadow){
+      trailingSection.style.display = 'block';
+      $('trailingHistoryTitle').textContent = 'The same plan, run against actual history (' + shadowStartYear + '–' + (shadowStartYear + r.years) + ', ' + shadow.rate.toFixed(2) + '% mortgage)';
+      renderYearlyTable(shadow.yearlyRows, 'yearlyBodyHistorical');
+    } else {
+      trailingSection.style.display = 'none';
+    }
+  }
+
+  syncHistoricalUI(true);
+  update();
+})();
+</script>
+
+</body>
+</html>
